@@ -1,5 +1,9 @@
 import json
 import datetime
+import boto3
+import uuid
+
+dynamodb = boto3.client("dynamodb")
 
 def createAuction(event, context):
 
@@ -17,10 +21,24 @@ def createAuction(event, context):
         })
 
     auction = {
-        "title": req_body["title"],
-        "status": "OPEN",
-        "createdAt": datetime.datetime.now().isoformat()
+        "id": {
+            "S": str(uuid.uuid4())
+        },
+        "title": {
+            "S": req_body["title"]
+        },
+        "status": {
+            "S": "OPEN"
+        },
+        "createdAt": {
+            "S": datetime.datetime.now().isoformat()
+        },
     }
+
+    dynamodb.put_item(
+        TableName="AuctionsTable",
+        Item=auction
+    )
 
     response = {
         "statusCode": 201,
